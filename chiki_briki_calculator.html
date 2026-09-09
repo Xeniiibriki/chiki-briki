@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#ffffff">
+<title>Чики-Брики — вычислитель победителя</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #f4f5f7;
+    color: #171717;
+    display: flex;
+    justify-content: center;
+  }
+  .app {
+    width: 100%;
+    max-width: 480px;
+    min-height: 100vh;
+    background: white;
+    padding: 28px 20px 36px;
+  }
+  h1 {
+    margin: 0 0 8px;
+    font-size: 28px;
+    line-height: 1.1;
+    letter-spacing: -0.5px;
+  }
+  .subtitle {
+    margin: 0 0 30px;
+    color: #666;
+    font-size: 15px;
+  }
+  label {
+    display: block;
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+  .counter {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+  .counter button {
+    width: 52px;
+    height: 52px;
+    border: 1px solid #ddd;
+    border-radius: 14px;
+    background: #f7f7f7;
+    font-size: 28px;
+    cursor: pointer;
+  }
+  input {
+    flex: 1;
+    min-width: 0;
+    height: 52px;
+    border: 1px solid #ddd;
+    border-radius: 14px;
+    text-align: center;
+    font-size: 22px;
+    font-weight: 600;
+    outline: none;
+  }
+  input:focus { border-color: #888; }
+  .info {
+    background: #f5f5f5;
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 20px;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+  .calculate {
+    width: 100%;
+    height: 56px;
+    border: 0;
+    border-radius: 16px;
+    background: #171717;
+    color: white;
+    font-size: 17px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .result {
+    display: none;
+    margin-top: 24px;
+    padding: 22px;
+    border-radius: 18px;
+    background: #f5f5f5;
+    text-align: center;
+  }
+  .result.visible { display: block; }
+  .result-label {
+    color: #666;
+    font-size: 14px;
+    margin-bottom: 5px;
+  }
+  .winner {
+    font-size: 42px;
+    font-weight: 800;
+    letter-spacing: -1px;
+  }
+  .details {
+    margin-top: 12px;
+    color: #666;
+    font-size: 14px;
+  }
+  .error {
+    color: #b00020;
+    font-size: 14px;
+    margin-top: 10px;
+    display: none;
+  }
+</style>
+</head>
+<body>
+<main class="app">
+  <h1>Чики-Брики</h1>
+  <p class="subtitle">Вычислитель</p>
+
+  <label for="players">Количество игроков</label>
+  <div class="counter">
+    <button type="button" id="minus" aria-label="Уменьшить">−</button>
+    <input id="players" type="number" min="1" step="1" value="8" inputmode="numeric">
+    <button type="button" id="plus" aria-label="Увеличить">+</button>
+  </div>
+
+  <div class="info">
+    Каждый игрок выстраивает 4 пальца в общий круг. Считалка звучит «чики-брики-пальчик-выкинь».
+    Тот палец, на который выпало «выкинь», выбывает. Побеждает последний оставшийся палец. Который?
+  </div>
+
+  <button class="calculate" id="calculate">Рассчитать победителя</button>
+
+  <div class="error" id="error"></div>
+
+  <section class="result" id="result">
+    <div class="result-label">Победитель</div>
+    <div class="winner" id="winner"></div>
+    <div class="details" id="details"></div>
+  </section>
+</main>
+
+<script>
+  const playersInput = document.getElementById("players");
+  const minus = document.getElementById("minus");
+  const plus = document.getElementById("plus");
+  const calculate = document.getElementById("calculate");
+  const result = document.getElementById("result");
+  const winner = document.getElementById("winner");
+  const details = document.getElementById("details");
+  const error = document.getElementById("error");
+
+  minus.addEventListener("click", () => {
+    const value = Math.max(1, Number(playersInput.value) - 1);
+    playersInput.value = value;
+  });
+
+  plus.addEventListener("click", () => {
+    playersInput.value = Number(playersInput.value) + 1;
+  });
+
+  function calculateWinner() {
+    const players = Number(playersInput.value);
+
+    if (!Number.isInteger(players) || players < 1) {
+      error.textContent = "Введите целое количество игроков от 1.";
+      error.style.display = "block";
+      result.classList.remove("visible");
+      return;
+    }
+
+    error.style.display = "none";
+
+    const total = players * 4;
+
+    // Задача Иосифа: каждый 4-й участник выбывает.
+    // Используем нумерацию с 0 внутри алгоритма.
+    let w = 0;
+
+    for (let i = 2; i <= total; i++) {
+      w = (w + 4) % i;
+    }
+
+    // Переводим обратно в нумерацию с 1.
+    const winningFinger = w + 1;
+
+    winner.textContent = `${winningFinger}-й палец`;
+    details.textContent = `Всего пальцев: ${total}`;
+    result.classList.add("visible");
+  }
+
+  calculate.addEventListener("click", calculateWinner);
+</script>
+</body>
+</html>
